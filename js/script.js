@@ -2,7 +2,9 @@
 
 window.addEventListener('DOMContentLoaded', () => {
 
+
     // Tabs
+
 
     const tabs = document.querySelectorAll('.tabheader__item'),
           contents = document.querySelectorAll('.tabcontent'),
@@ -35,7 +37,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (item == target) {
 
                     hideTabContent();
-                    showContent(i);
+                    showTabContent(i);
                 }
             }) 
         }
@@ -44,9 +46,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Timer
 
-    const deadline = '2023-02-16';
     
-    
+    const deadline = '2023-02-27';
+
     function getTimeRemaining(endtime) {
         let days, hours, minutes, seconds;
         const t = Date.parse(endtime) - Date.parse(new Date());
@@ -57,54 +59,96 @@ window.addEventListener('DOMContentLoaded', () => {
             minutes = 0;
             seconds = 0;
         } else {
-            days = Math.floor(t / (1000 * 60 * 60 * 24));
-            hours = Math.floor((t / (1000 * 60 * 60)) % 24);
-            minutes = Math.floor((t / (1000 * 60)) % 60);
+            days = Math.floor(t / (1000 * 60 * 60 * 24)),
+            hours = Math.floor((t / (1000 * 60 * 60)) % 24),
+            minutes = Math.floor((t / (1000 * 60)) % 60),
             seconds = Math.floor((t / 1000) % 60);
         }
 
         return {
-            sum: t,
+            total: t,
             days: days,
             hours: hours,
             minutes: minutes,
             seconds: seconds,
-        }
+        };
     }
 
-    function fixTime(sum) {
-        if (sum > 0 && sum < 10) {
-            return `0${sum}`
+    function getZero(num) {
+        if (num > 0 && num < 10) {
+            return `0${num}`;
         } else {
-            return sum;
+            return num;
         }
     }
 
-    function setClock(mainelem, endtime) {
-        const time = document.querySelector(mainelem),
-              days = time.querySelector('#days'),
-              hours = time.querySelector('#hours'),
-              minutes = time.querySelector('#minutes'),
-              seconds = time.querySelector('#seconds'),
-              timeInterval = setInterval(updateTime, 1000);
+    function getTimerElements(selector, endtime) {
+        const timer = document.querySelector(selector),
+              days = timer.querySelector('#days'),
+              hours = timer.querySelector('#hours'),
+              minutes = timer.querySelector('#minutes'),
+              seconds = timer.querySelector('#seconds'),
+              timeInterval = setInterval(setClock, 1000);
 
+        setClock();
 
-        updateTime();
-        
-        function updateTime() {
+        function setClock() {
             const t = getTimeRemaining(endtime);
 
-            days.textContent = fixTime(t.days);
-            hours.textContent = fixTime(t.hours);
-            minutes.textContent = fixTime(t.minutes);
-            seconds.textContent = fixTime(t.seconds);
+            days.textContent = getZero(t.days);
+            hours.textContent = getZero(t.hours);
+            minutes.textContent = getZero(t.minutes);
+            seconds.textContent = getZero(t.seconds);
 
-            if (t.sum < 0) {
+            if (t.total <= 0) {
                 clearInterval(timeInterval);
             }
         }
     }
-
-    setClock('.timer', deadline);
     
+    getTimerElements('.timer', deadline);
+
+
+    // Modal
+
+
+    const modalTrigger = document.querySelectorAll('[data-modal]'),
+          modal = document.querySelector('.modal'),
+          modalCloseBtn = document.querySelector('[data-close]');
+
+    function showModal() {
+        modalTrigger.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }); 
+        });
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    modalCloseBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Escape' && window.getComputedStyle(modal).display === 'block') {
+            closeModal();
+        }
+    });
+
+    showModal();
 });
+
+
+
+
+
+
