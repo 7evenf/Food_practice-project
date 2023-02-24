@@ -153,7 +153,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    const modalTimerId = setTimeout(showModal, 2000);
+    // const modalTimerId = setTimeout(showModal, 2000);
 
     
     const showModalByScroll = function() {
@@ -217,7 +217,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
         9,
         ".menu .container",
-        'menu__item'
+        'menu__item',
     ).render();
 
     new Cards(
@@ -227,7 +227,7 @@ window.addEventListener('DOMContentLoaded', () => {
         'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
         21,
         ".menu .container",
-        'menu__item'
+        'menu__item',
     ).render();
 
     new Cards(
@@ -237,16 +237,57 @@ window.addEventListener('DOMContentLoaded', () => {
         'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
         14,
         ".menu .container",
-        'menu__item'
+        'menu__item',
     ).render();
 
+
+    // Forms
+
+
+    const forms = document.querySelectorAll('form');
+    const pattern = {
+        process: 'Processing',
+        success: 'Success',
+        fail: 'Fail, please wait'
+    }
+
+
+    forms.forEach(item => {
+        postData(item);
+    });
+    
+    function postData(form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const box = document.createElement('div');
+            form.append(box);
+            box.textContent = pattern.process;
+
+            const request = new XMLHttpRequest();  
+            request.open('POST', 'server.php');
+            request.setRequestHeader('Content-type', 'application/json');
+
+            const formData = new FormData(form);
+            const obj = {};
+            formData.forEach((item, i) => {
+                obj[i] = item;
+            });
+
+            request.send(JSON.stringify(obj));
+
+            request.addEventListener('load', () => {
+                if (request.status === 200) {
+                    console.log(request.response);
+                    form.reset();
+                    box.textContent = pattern.success;
+                    setTimeout(() => box.textContent = '', 2000)
+                } else {
+                    box.textContent = pattern.fail;
+                }
+            });
+        });
+
+    }
+
 });
-
-
-
-const arr = ['kak dela', 'privet']
-let string; 
-arr.forEach(e => {
-    string = e;
-});
-console.log(string);
