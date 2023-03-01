@@ -150,7 +150,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    const modalTimerId = setTimeout(showModal, 40000);
+    const modalTimerId = setTimeout(showModal, 20000);
 
     
     const showModalByScroll = function() {
@@ -242,82 +242,73 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     const forms = document.querySelectorAll('form');
-    const pattern = {
-        process: 'img/form/spinner.svg',
-        success: 'Спасибо, скоро мы с вами свяжемся!',
-        fail: 'Произошла ошибка, пожалуйста подождите!'
+    forms.forEach(form => postData(form));
+    const patternAlerts = {
+        loading: 'img/form/spinner.svg',
+        success: 'Спасибо! Скоро мы с вами свяжемся',
+        error: 'Извините, что-то пошло не так!'
     }
 
 
-    forms.forEach(item => {
-        postData(item);
-    });
-    
     function postData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const statusMessage = document.createElement('img');
-            statusMessage.src = pattern.process;
-            statusMessage.style.cssText = `
-                display: block;
+            const statusLoading = document.createElement('img');
+            statusLoading.src = patternAlerts.loading;
+            statusLoading.style.cssText = `
+                display: block; 
                 margin: 0 auto;
             `;
-            form.insertAdjacentElement('afterend', statusMessage);
-
-
-
-            const request = new XMLHttpRequest();  
-            request.open('POST', 'server.php');
-            request.setRequestHeader('Content-type', 'application/json');
+            form.insertAdjacentElement('afterend', statusLoading);
 
             const formData = new FormData(form);
             const obj = {};
-            formData.forEach((item, i) => {
-                obj[i] = item;
+            formData.forEach((key, i) => {
+                obj[i] = key;
             });
 
-            request.send(JSON.stringify(obj));
 
-            request.addEventListener('load', () => {
-                if (request.status === 200) {
-                    console.log(request.response);
-                    form.reset();
-                    showThanksModal(pattern.success);
-                    setTimeout(() => {
-                        statusMessage.remove();
-                    }, 2000);
-                    
-                } else {
-                    showThanksModal(pattern.fail);
-                }
-            });
-        });
-
+            fetch('server.php', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(obj)
+                
+            })
+            .then((data) => data.text())
+            .then((data) => {
+                console.log(data)
+                showModalAfterSending(patternAlerts.success);
+                statusLoading.remove();
+            })
+            .catch((error) => console.log(error))
+            .finally(() => form.reset())
+        })
     }
 
-    function showThanksModal(message) {
-        const prevModal = document.querySelector('.modal__dialog');
-
-        prevModal.style.display = 'none';
+    function showModalAfterSending(textallert) {
+        const previosModal = document.querySelector('.modal__dialog');
+        previosModal.style.display = 'none';
         showModal();
-
-        const thanksModal = document.createElement('div');
-        thanksModal.classList.add('modal__dialog');
-        thanksModal.innerHTML = `
-        <div class="modal__content">
-            <div data-close class="modal__close">×</div>
-            <div class="modal__title">${message}</div>
-        </div>
-        `;
-        document.querySelector('.modal').append(thanksModal);
+        
+        const currentModal = document.createElement('div');
+        currentModal.classList.add('modal__dialog');
+        currentModal.innerHTML = `
+            <div class="modal__content">
+                <div data-close class="modal__close">×</div>
+                <div class="modal__title">${textallert}</div>
+            </div>
+        `
+        document.querySelector('.modal').append(currentModal);
 
         setTimeout(() => {
-            prevModal.style.display = 'block';
-            thanksModal.remove();
+            previosModal.style.display = 'block';
+            currentModal.remove();
             closeModal();
-        },3000);
+        }, 3000)
     }
 
-    
+
 });
